@@ -1,0 +1,367 @@
+---
+description: Technology stack, dependency versions, and version-specific best practices
+globs:
+alwaysApply: true
+---
+
+# Technology Stack & Dependency Versions
+
+This document outlines the complete technology stack, dependency versions, and version-specific best practices for the content-hub-next project.
+
+## Core Framework & Runtime
+
+### Next.js 16.1.4
+
+**Version Notes:**
+- Latest stable version (as of project setup)
+- Full App Router support (Pages Router deprecated for new features)
+- Built-in React Server Components support
+- Turbopack as default bundler (faster than Webpack)
+
+**Best Practices:**
+- ✅ **Always use App Router** - Never use Pages Router (`/pages`) for new features
+- ✅ **Server Components by default** - Only add `"use client"` when needed for interactivity
+- ✅ **Use async Server Components** - Leverage async/await in Server Components for data fetching
+- ✅ **Metadata API** - Use `metadata` export for SEO instead of `<Head>`
+- ✅ **Route Handlers** - Use `route.ts` files in `app/api/` for API endpoints
+- ✅ **Streaming & Suspense** - Use `loading.tsx` and Suspense boundaries for better UX
+- ✅ **Server Actions** - Prefer Server Actions over API routes for mutations
+
+**File Conventions:**
+- `page.tsx` - Route pages
+- `layout.tsx` - Shared layouts
+- `loading.tsx` - Loading states
+- `error.tsx` - Error boundaries
+- `not-found.tsx` - 404 pages
+- `route.ts` - API route handlers
+- `template.tsx` - Re-rendering templates
+
+**Example:**
+```typescript
+// ✅ Good - Server Component (default)
+export default async function Page() {
+  const data = await fetchData();
+  return <div>{data}</div>;
+}
+
+// ✅ Good - Client Component (when needed)
+"use client";
+export default function InteractiveComponent() {
+  const [state, setState] = useState();
+  return <button onClick={() => setState(...)}>Click</button>;
+}
+```
+
+### React 19.2.3
+
+**Version Notes:**
+- Latest React 19 major version
+- React Compiler support (automatic memoization)
+- New hooks: `useFormStatus`, `useFormState`, `useActionState`
+- Improved Server Components support
+- Better hydration error messages
+
+**Best Practices:**
+- ✅ **React Compiler** - Leverage automatic optimizations (no manual `useMemo`/`useCallback` needed)
+- ✅ **Server Actions** - Use with `useFormStatus` for form handling
+- ✅ **Async Components** - Fully supported in React 19
+- ✅ **Ref as Prop** - Use `ref` as a regular prop (no `forwardRef` needed)
+- ✅ **Context as Provider** - Simplified context usage
+
+**Breaking Changes to Watch:**
+- `ref` is now a regular prop (no `forwardRef` wrapper needed)
+- Some deprecated APIs removed
+- Stricter hydration checks
+
+**Example:**
+```typescript
+// ✅ Good - React 19 Server Action with form status
+"use client";
+import { useFormStatus } from "react-dom";
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return <button disabled={pending}>Submit</button>;
+}
+```
+
+### React DOM 19.2.3
+
+**Version Notes:**
+- Matches React 19 version
+- Improved hydration
+- Better error boundaries
+
+**Best Practices:**
+- ✅ Keep React and React DOM versions in sync
+- ✅ Use error boundaries for better error handling
+
+## Language & Type Safety
+
+### TypeScript 5.x
+
+**Version Notes:**
+- Latest TypeScript major version
+- Improved type inference
+- Better performance
+- Enhanced decorator support
+
+**Best Practices:**
+- ✅ **Strict Mode Enabled** - Already configured in `tsconfig.json`
+- ✅ **Type Everything** - Use interfaces/types for all props and data structures
+- ✅ **Avoid `any`** - Use `unknown` or proper types instead
+- ✅ **Type Imports** - Use `import type` for type-only imports
+- ✅ **Path Aliases** - Use `@/*` aliases (configured in `tsconfig.json`)
+
+**Configuration:**
+- Target: ES2017
+- Module: ESNext
+- Module Resolution: bundler (optimized for Next.js)
+- JSX: react-jsx
+
+**Example:**
+```typescript
+// ✅ Good - Proper typing
+interface UserProps {
+  name: string;
+  age: number;
+}
+
+export function User({ name, age }: UserProps) {
+  return <div>{name} ({age})</div>;
+}
+
+// ✅ Good - Type imports
+import type { NextRequest } from "next/server";
+```
+
+## Styling & UI
+
+### Tailwind CSS 4.x
+
+**Version Notes:**
+- Major version update with new features
+- Improved performance
+- Better CSS variable support
+- New utility classes
+
+**Best Practices:**
+- ✅ **CSS Variables** - Use CSS variables for theming (configured in `components.json`)
+- ✅ **PostCSS Integration** - Uses `@tailwindcss/postcss` plugin
+- ✅ **Utility Classes** - Prefer utility classes over custom CSS
+- ✅ **Component Variants** - Use `class-variance-authority` for component variants
+- ✅ **Responsive Design** - Use Tailwind breakpoints (`sm:`, `md:`, `lg:`, etc.)
+
+**Configuration:**
+- Base color: neutral
+- CSS variables: enabled
+- Style: new-york (shadcn/ui)
+
+**Example:**
+```typescript
+// ✅ Good - Tailwind utilities with CVA
+import { cva } from "class-variance-authority";
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center rounded-md",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground",
+        destructive: "bg-destructive text-destructive-foreground",
+      },
+    },
+  }
+);
+```
+
+### shadcn/ui (via components.json)
+
+**Version Notes:**
+- Component library built on Radix UI
+- Fully customizable
+- Copy-paste components (not npm package)
+- Style: new-york
+
+**Best Practices:**
+- ✅ **Copy Components** - Components are copied to your project, customize freely
+- ✅ **Use Path Aliases** - Components in `@/components/ui`
+- ✅ **Lucide Icons** - Use `lucide-react` for icons (configured)
+- ✅ **RSC Support** - Components support React Server Components
+- ✅ **TypeScript** - All components are fully typed
+
+**Component Location:**
+- `components/ui/` - shadcn/ui components
+- `components/` - Custom components
+
+### Lucide React 0.563.0
+
+**Version Notes:**
+- Icon library for React
+- Tree-shakeable
+- TypeScript support
+
+**Best Practices:**
+- ✅ **Named Imports** - Import only needed icons
+- ✅ **Use Icons Consistently** - Follow design system icon usage
+
+**Example:**
+```typescript
+// ✅ Good - Named import
+import { User, Mail, Settings } from "lucide-react";
+
+// ❌ Bad - Import all icons
+import * as Icons from "lucide-react";
+```
+
+## Utility Libraries
+
+### clsx 2.1.1
+
+**Version Notes:**
+- Latest version
+- Conditional className utility
+
+**Best Practices:**
+- ✅ **Use with `cn()`** - Combined with `tailwind-merge` in `lib/utils.ts`
+- ✅ **Conditional Classes** - Use for dynamic class names
+
+**Example:**
+```typescript
+import { cn } from "@/lib/utils";
+
+// ✅ Good - Using cn() utility
+<div className={cn("base-class", isActive && "active-class")} />
+```
+
+### tailwind-merge 3.4.0
+
+**Version Notes:**
+- Merges Tailwind classes intelligently
+- Resolves conflicts (e.g., `p-2 p-4` → `p-4`)
+
+**Best Practices:**
+- ✅ **Always use with `cn()`** - Already configured in `lib/utils.ts`
+- ✅ **Merge Conflicts** - Automatically resolves Tailwind class conflicts
+
+### class-variance-authority 0.7.1
+
+**Version Notes:**
+- Component variant management
+- Type-safe variants
+
+**Best Practices:**
+- ✅ **Use for Component Variants** - Button, Card, etc. variants
+- ✅ **Type Safety** - Define variants with TypeScript types
+
+## Development Tools
+
+### ESLint 9.x
+
+**Version Notes:**
+- Latest ESLint major version
+- Flat config format (new default)
+- Better performance
+
+**Best Practices:**
+- ✅ **Flat Config** - Uses `eslint.config.mjs` (not `.eslintrc`)
+- ✅ **Next.js Config** - Uses `eslint-config-next` for Next.js rules
+- ✅ **Run Before Commit** - Check linting before committing
+
+**Configuration:**
+- Config file: `eslint.config.mjs`
+- Extends: `eslint-config-next`
+
+### PostCSS (via @tailwindcss/postcss 4.x)
+
+**Version Notes:**
+- Tailwind CSS 4 PostCSS plugin
+- Processes CSS with Tailwind
+
+**Best Practices:**
+- ✅ **Configured Automatically** - No manual PostCSS config needed
+- ✅ **CSS Processing** - Handles Tailwind directives
+
+## Package Management
+
+### pnpm
+
+**Version Notes:**
+- Fast, disk-efficient package manager
+- Uses workspace configuration
+
+**Best Practices:**
+- ✅ **Use pnpm Commands** - Always use `pnpm` (not `npm` or `yarn`)
+- ✅ **Lock File** - Commit `pnpm-lock.yaml`
+- ✅ **Workspace Support** - Configured via `pnpm-workspace.yaml`
+
+**Commands:**
+- `pnpm install` - Install dependencies
+- `pnpm add <package>` - Add dependency
+- `pnpm dev` - Start dev server
+- `pnpm build` - Build for production
+
+## Version Compatibility Matrix
+
+| Package | Version | Compatible With | Notes |
+|---------|---------|-----------------|-------|
+| Next.js | 16.1.4 | React 19.x | Requires React 19 |
+| React | 19.2.3 | Next.js 16.x | Latest stable |
+| React DOM | 19.2.3 | React 19.x | Must match React |
+| TypeScript | 5.x | All | Latest major |
+| Tailwind CSS | 4.x | PostCSS 4.x | Major version |
+| ESLint | 9.x | Flat config | New format |
+
+## Important Notes
+
+### React 19 + Next.js 16 Compatibility
+
+- ✅ **Fully Compatible** - Next.js 16 is built for React 19
+- ✅ **Server Components** - Full support for async Server Components
+- ✅ **Server Actions** - Use React 19's `useFormStatus` and `useActionState`
+
+### Tailwind CSS 4 Migration
+
+- ✅ **PostCSS Plugin** - Uses `@tailwindcss/postcss` (not `tailwindcss` PostCSS plugin)
+- ✅ **CSS Variables** - Enhanced CSS variable support
+- ✅ **New Utilities** - Check Tailwind 4 docs for new utilities
+
+### ESLint 9 Flat Config
+
+- ✅ **New Format** - Uses `eslint.config.mjs` (not `.eslintrc.json`)
+- ✅ **Next.js Config** - `eslint-config-next` supports flat config
+- ✅ **No Migration Needed** - Already configured correctly
+
+## Upgrade Recommendations
+
+### When Upgrading Dependencies
+
+1. **Check Compatibility** - Verify all packages are compatible
+2. **Read Changelogs** - Review breaking changes
+3. **Test Thoroughly** - Test all features after upgrade
+4. **Update Types** - Update `@types/*` packages if needed
+
+### Current Status
+
+- ✅ **All Versions Current** - Using latest stable versions
+- ✅ **Compatible Stack** - All packages work together
+- ✅ **Production Ready** - Stack is stable for production use
+
+## Best Practices Summary
+
+1. **Server Components First** - Default to Server Components, add `"use client"` only when needed
+2. **Type Safety** - Use TypeScript strictly, type all props and data
+3. **Tailwind Utilities** - Prefer utility classes over custom CSS
+4. **Component Variants** - Use `class-variance-authority` for component variants
+5. **Path Aliases** - Use `@/*` aliases for imports
+6. **ESLint** - Run linting before committing
+7. **pnpm** - Always use pnpm for package management
+
+## References
+
+- [Next.js 16 Documentation](https://nextjs.org/docs)
+- [React 19 Documentation](https://react.dev)
+- [Tailwind CSS 4 Documentation](https://tailwindcss.com/docs)
+- [TypeScript 5 Documentation](https://www.typescriptlang.org/docs)
+- [shadcn/ui Documentation](https://ui.shadcn.com)
+- [ESLint 9 Documentation](https://eslint.org/docs/latest)

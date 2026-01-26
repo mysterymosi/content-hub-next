@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+
+- Use `pnpm`.
+
+```sh
+pnpm add ...
+```
