@@ -1,0 +1,219 @@
+---
+description: Project directory structure and important files and folders
+globs:
+alwaysApply: true
+---
+
+# Project Structure
+
+This document outlines the directory structure and important files in the content-hub-next project.
+
+## Root Directory Structure
+
+```
+content-hub-next/
+├── .cursor/                    # Cursor IDE configuration
+│   └── rules/                  # Cursor rules (this file location)
+│       ├── cursor-rules.mdc    # How to add/edit cursor rules
+│       ├── self-improvement.mdc
+│       └── project-structure.mdc
+│
+├── .next/                      # Next.js build output (generated, gitignored)
+│
+├── app/                        # Next.js App Router directory
+│   ├── favicon.ico            # Site favicon
+│   ├── globals.css            # Global styles and Tailwind CSS imports
+│   ├── layout.tsx             # Root layout component
+│   └── page.tsx               # Home page component
+│
+├── lib/                        # Shared utility functions and libraries
+│   └── utils.ts               # Utility functions (e.g., cn() for className merging)
+│
+├── public/                     # Static assets served at root
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+│
+├── components.json             # shadcn/ui configuration
+├── eslint.config.mjs          # ESLint configuration
+├── next.config.ts             # Next.js configuration
+├── next-env.d.ts              # Next.js TypeScript declarations (generated)
+├── package.json               # Project dependencies and scripts
+├── pnpm-lock.yaml             # pnpm lockfile
+├── pnpm-workspace.yaml        # pnpm workspace configuration
+├── postcss.config.mjs         # PostCSS configuration (for Tailwind)
+├── README.md                  # Project documentation
+└── tsconfig.json              # TypeScript configuration
+```
+
+## Important Directories
+
+### `/app` - Next.js App Router
+
+The main application directory using Next.js 16 App Router pattern.
+
+- **`app/layout.tsx`**: Root layout that wraps all pages
+- **`app/page.tsx`**: Home page route (`/`)
+- **`app/globals.css`**: Global styles and Tailwind CSS directives
+- **`app/favicon.ico`**: Site favicon
+
+**Conventions:**
+- Use file-based routing (folders = routes)
+- `page.tsx` files define routes
+- `layout.tsx` files define shared layouts
+- `loading.tsx` files define loading states
+- `error.tsx` files define error boundaries
+- `not-found.tsx` files define 404 pages
+
+### `/lib` - Shared Utilities
+
+Contains reusable utility functions and shared code.
+
+- **`lib/utils.ts`**: Common utilities (currently contains `cn()` for className merging)
+
+**Conventions:**
+- Export pure functions
+- Keep utilities framework-agnostic when possible
+- Use TypeScript for type safety
+
+### `/public` - Static Assets
+
+Static files served at the root URL path.
+
+**Conventions:**
+- Place images, fonts, and other static assets here
+- Files are accessible at `/filename.ext`
+- Use for assets that don't need processing
+
+### `/.cursor/rules` - Cursor Rules
+
+Project-specific rules and guidelines for AI assistance.
+
+**Existing Rules:**
+- `cursor-rules.mdc`: How to add/edit cursor rules
+- `self-improvement.mdc`: Self-improvement guidelines
+- `project-structure.mdc`: This file
+
+**Conventions:**
+- Use kebab-case for filenames
+- Always use `.mdc` extension
+- Place all rules in this directory
+
+## Important Configuration Files
+
+### `package.json`
+
+Project dependencies and scripts:
+- **Framework**: Next.js 16.1.4
+- **React**: 19.2.3
+- **Package Manager**: pnpm
+- **UI Library**: shadcn/ui (via components.json)
+- **Styling**: Tailwind CSS 4
+
+**Scripts:**
+- `dev`: Start development server
+- `build`: Build for production
+- `start`: Start production server
+- `lint`: Run ESLint
+
+### `tsconfig.json`
+
+TypeScript configuration:
+- Path aliases: `@/*` maps to project root
+- Strict mode enabled
+- React JSX support
+- Next.js plugin enabled
+
+**Path Aliases:**
+- `@/components` → `/components`
+- `@/lib` → `/lib`
+- `@/hooks` → `/hooks`
+- `@/utils` → `/lib/utils`
+
+### `components.json`
+
+shadcn/ui component configuration:
+- **Style**: new-york
+- **Icon Library**: lucide-react
+- **Tailwind CSS**: Configured with CSS variables
+- **Base Color**: neutral
+
+### `next.config.ts`
+
+Next.js configuration file. Currently minimal, add custom config here.
+
+### `eslint.config.mjs`
+
+ESLint configuration using Next.js recommended rules.
+
+### `postcss.config.mjs`
+
+PostCSS configuration for Tailwind CSS processing.
+
+## Generated/Build Files (Do Not Edit)
+
+- `.next/`: Next.js build output
+- `next-env.d.ts`: Auto-generated TypeScript declarations
+- `node_modules/`: Dependencies
+- `pnpm-lock.yaml`: Dependency lockfile
+
+## Directory Conventions
+
+### Adding New Features
+
+1. **Pages/Routes**: Add to `/app` directory
+   - Create folder: `app/feature-name/`
+   - Add `page.tsx` for the route
+
+2. **Components**: Add to `/components` directory (when created)
+   - Reusable UI components
+   - Follow shadcn/ui patterns
+
+3. **Utilities**: Add to `/lib` directory
+   - Shared functions
+   - Helper utilities
+
+4. **API Routes**: Add to `/app/api` directory (when created)
+   - Route handlers: `app/api/route-name/route.ts`
+
+5. **Hooks**: Add to `/hooks` directory (when created)
+   - Custom React hooks
+
+### File Naming Conventions
+
+- **Components**: PascalCase (e.g., `UserProfile.tsx`)
+- **Utilities**: camelCase (e.g., `formatDate.ts`)
+- **Routes**: lowercase with hyphens (e.g., `user-profile/page.tsx`)
+- **Config files**: kebab-case (e.g., `next.config.ts`, `eslint.config.mjs`)
+
+## Technology Stack
+
+- **Framework**: Next.js 16.1.4 (App Router)
+- **Language**: TypeScript 5
+- **UI**: React 19.2.3
+- **Styling**: Tailwind CSS 4
+- **Components**: shadcn/ui
+- **Icons**: lucide-react
+- **Package Manager**: pnpm
+- **Linting**: ESLint with Next.js config
+
+## Path Aliases
+
+Use these aliases for imports (configured in `tsconfig.json` and `components.json`):
+
+```typescript
+import { cn } from "@/lib/utils"           // ✅ Good
+import { cn } from "../../lib/utils"      // ❌ Avoid
+
+import { Button } from "@/components/ui/button"  // ✅ Good
+```
+
+Available aliases:
+- `@/*` → Project root
+- `@/components` → `/components` (when created)
+- `@/lib` → `/lib`
+- `@/hooks` → `/hooks` (when created)
+- `@/utils` → `/lib/utils`
+- `@/ui` → `/components/ui` (when created)
