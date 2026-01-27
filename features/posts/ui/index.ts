@@ -1,4 +1,5 @@
 export { PostsList } from "./posts-list";
+export { PostsListSkeleton } from "./posts-list-skeleton";
 export { PostDetail } from "./post-detail";
 export { PostDetailModal } from "./post-detail-modal";
 export { PostForm } from "./post-form";
