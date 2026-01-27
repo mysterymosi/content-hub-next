@@ -1,25 +1,38 @@
-import type { User } from "@/types";
+export interface User {
+  id: number;
+  name: string;
+  username: string;
+  email: string;
+  address: {
+    street: string;
+    suite: string;
+    city: string;
+    zipcode: string;
+    geo: {
+      lat: string;
+      lng: string;
+    };
+  };
+  phone: string;
+  website: string;
+  company: {
+    name: string;
+    catchPhrase: string;
+    bs: string;
+  };
+}
 
-/**
- * Login credentials for authentication
- */
 export interface LoginCredentials {
   email: string;
   password: string;
 }
 
-/**
- * Authentication state
- */
 export interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
 }
 
-/**
- * Login response from API
- */
 export interface LoginResponse {
   user: User;
   token: string;

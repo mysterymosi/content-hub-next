@@ -2,12 +2,8 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { User } from "@/types";
+import type { User } from "@/features/auth/types";
 
-/**
- * Auth store state interface
- * Note: Token is stored in HTTP-only cookies, not in this store
- */
 interface AuthStore {
   user: User | null;
   isAuthenticated: boolean;
@@ -15,9 +11,6 @@ interface AuthStore {
   error: string | null;
 }
 
-/**
- * Auth store actions interface
- */
 interface AuthActions {
   setUser: (user: User | null) => void;
   setLoading: (isLoading: boolean) => void;
@@ -26,14 +19,8 @@ interface AuthActions {
   logout: () => void;
 }
 
-/**
- * Combined auth store type
- */
 type AuthStoreType = AuthStore & AuthActions;
 
-/**
- * Initial state for auth store
- */
 const initialState: AuthStore = {
   user: null,
   isAuthenticated: false,
@@ -41,49 +28,27 @@ const initialState: AuthStore = {
   error: null,
 };
 
-/**
- * Auth store using Zustand with persistence
- * Manages client-side UI state only.
- * Authentication token is stored in HTTP-only cookies via Server Actions.
- * Only user data is persisted (not token).
- */
 export const useAuthStore = create<AuthStoreType>()(
   persist(
     (set) => ({
       ...initialState,
 
-      /**
-       * Set user and update authentication status
-       */
       setUser: (user: User | null) => {
         set({ user, isAuthenticated: !!user });
       },
 
-      /**
-       * Set loading state
-       */
       setLoading: (isLoading: boolean) => {
         set({ isLoading });
       },
 
-      /**
-       * Set error state
-       */
       setError: (error: string | null) => {
         set({ error });
       },
 
-      /**
-       * Clear error state
-       */
       clearError: () => {
         set({ error: null });
       },
 
-      /**
-       * Logout - clears store state
-       * Cookie clearing is handled by Server Action
-       */
       logout: () => {
         set({
           user: null,
@@ -94,10 +59,8 @@ export const useAuthStore = create<AuthStoreType>()(
       },
     }),
     {
-      name: "auth-storage", // localStorage key
+      name: "auth-storage",
       partialize: (state) => ({
-        // Only persist user data and authentication status
-        // Token is NOT persisted (stored in HTTP-only cookies only)
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),

@@ -2,12 +2,13 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, FileText, LogOut, User } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, FileText } from "lucide-react";
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -18,11 +19,9 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { useAuthStore } from "@/features/auth/store";
-import { logoutAction } from "@/actions/auth";
+import { routes } from "@/lib/routes";
+import { NavUser } from "./nav-user";
 
-/**
- * Navigation data for ContentHub dashboard
- */
 const navData = {
   main: [
     {
@@ -30,12 +29,12 @@ const navData = {
       items: [
         {
           title: "Dashboard",
-          url: "/dashboard",
+          url: routes.protected.dashboard.base,
           icon: LayoutDashboard,
         },
         {
           title: "Posts",
-          url: "/dashboard/posts",
+          url: routes.protected.dashboard.posts.base,
           icon: FileText,
         },
       ],
@@ -45,17 +44,7 @@ const navData = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, logout } = useAuthStore();
-
-  const handleLogout = async () => {
-    // Clear cookie via Server Action
-    await logoutAction();
-    // Clear store state (client-side)
-    logout();
-    router.push("/login");
-    router.refresh();
-  };
+  const { user } = useAuthStore();
 
   return (
     <Sidebar {...props}>
@@ -97,33 +86,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ))}
       </SidebarContent>
-      <SidebarGroup>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            {user && (
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">{user.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {user.email}
-                      </span>
-                    </div>
-                  </div>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )}
-            <SidebarMenuItem>
-              <SidebarMenuButton onClick={handleLogout}>
-                <LogOut />
-                <span>Logout</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
+      <SidebarFooter>{user && <NavUser user={user} />}</SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

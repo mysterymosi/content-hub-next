@@ -18,9 +18,10 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useAuthStore } from "./store";
+import { useAuthStore } from "../store";
 import { loginAction } from "@/actions/auth";
-import type { LoginCredentials } from "./types";
+import { routes } from "@/lib/routes";
+import type { LoginCredentials } from "../types";
 
 export function LoginForm({
   className,
@@ -39,13 +40,11 @@ export function LoginForm({
     setLocalError(null);
     clearError();
 
-    // Basic validation
     if (!email || !password) {
       setLocalError("Please fill in all fields");
       return;
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setLocalError("Please enter a valid email address");
@@ -57,11 +56,8 @@ export function LoginForm({
       clearError();
 
       const credentials: LoginCredentials = { email, password };
-
-      // Call Server Action which handles API call and cookie setting
       const response = await loginAction(credentials);
 
-      // Check for error response
       if ("error" in response) {
         setLoading(false);
         const errorMessage =
@@ -71,12 +67,11 @@ export function LoginForm({
         return;
       }
 
-      // Update store with user data (token is in cookie, not store)
       setUser(response.user);
       setLoading(false);
 
-      // Redirect to original destination or dashboard
-      const redirect = searchParams.get("redirect") || "/dashboard";
+      const redirect =
+        searchParams.get("redirect") || routes.protected.dashboard.base;
       router.push(redirect);
       router.refresh();
     } catch (err) {
