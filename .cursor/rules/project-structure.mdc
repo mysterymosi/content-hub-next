@@ -15,19 +15,125 @@ content-hub-next/
 ├── .cursor/                    # Cursor IDE configuration
 │   └── rules/                  # Cursor rules (this file location)
 │       ├── cursor-rules.mdc    # How to add/edit cursor rules
+│       ├── error-checking.mdc  # Error checking workflow
 │       ├── self-improvement.mdc
 │       └── project-structure.mdc
 │
 ├── .next/                      # Next.js build output (generated, gitignored)
 │
+├── actions/                     # Server Actions (Next.js 16)
+│   ├── auth.ts                 # Authentication Server Actions
+│   ├── comments.ts             # Comments Server Actions
+│   ├── posts.ts                # Posts Server Actions
+│   └── users.ts                # Users Server Actions
+│
 ├── app/                        # Next.js App Router directory
+│   ├── (protected)/            # Route group for protected routes
+│   │   ├── dashboard/          # Dashboard routes
+│   │   │   ├── @modal/         # Parallel route for modals
+│   │   │   │   ├── (.)posts/[id]/page.tsx  # Intercepting route
+│   │   │   │   ├── [...catchAll]/page.tsx
+│   │   │   │   └── default.tsx
+│   │   │   ├── layout.tsx      # Dashboard layout with sidebar
+│   │   │   ├── page.tsx        # Dashboard home
+│   │   │   └── posts/          # Posts feature routes
+│   │   │       ├── [id]/       # Dynamic post detail route
+│   │   │       │   ├── error.tsx
+│   │   │       │   ├── loading.tsx
+│   │   │       │   └── page.tsx
+│   │   │       ├── error.tsx
+│   │   │       └── page.tsx    # Posts list page
+│   │   └── layout.tsx          # Protected routes layout
+│   │
+│   ├── (public)/               # Route group for public routes
+│   │   ├── layout.tsx          # Public routes layout
+│   │   └── login/              # Login page
+│   │       ├── loading.tsx
+│   │       └── page.tsx
+│   │
 │   ├── favicon.ico            # Site favicon
 │   ├── globals.css            # Global styles and Tailwind CSS imports
 │   ├── layout.tsx             # Root layout component
 │   └── page.tsx               # Home page component
 │
+├── components/                 # Reusable UI components
+│   ├── partials/              # Layout partials
+│   │   ├── app-sidebar.tsx    # Main application sidebar
+│   │   ├── nav-user.tsx       # User navigation component
+│   │   └── site-header.tsx    # Site header with breadcrumbs
+│   │
+│   └── ui/                    # shadcn/ui components
+│       ├── alert-dialog.tsx
+│       ├── avatar.tsx
+│       ├── breadcrumb.tsx
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── dialog.tsx
+│       ├── dropdown-menu.tsx
+│       ├── field.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── page-header.tsx    # Generic page header component
+│       ├── pagination-comp.tsx # Reusable pagination component
+│       ├── pagination.tsx
+│       ├── select.tsx
+│       ├── separator.tsx
+│       ├── sheet.tsx
+│       ├── sidebar.tsx
+│       ├── skeleton.tsx
+│       ├── sonner.tsx          # Toast notifications
+│       ├── textarea.tsx
+│       ├── tooltip.tsx
+│       └── typography.tsx
+│
+├── features/                   # Feature-based modules
+│   ├── auth/                   # Authentication feature
+│   │   ├── store.ts            # Zustand auth store
+│   │   ├── types.ts            # Auth-related types
+│   │   └── ui/                 # Auth UI components
+│   │       ├── index.ts        # Barrel export
+│   │       └── login-form.tsx
+│   │
+│   └── posts/                  # Posts feature
+│       ├── mutations.ts        # TanStack Query mutations
+│       ├── queries.ts          # TanStack Query hooks
+│       ├── schema.ts           # Yup validation schemas
+│       ├── types.ts            # Post-related types
+│       └── ui/                 # Posts UI components
+│           ├── create-post-modal.tsx
+│           ├── delete-post-dialog.tsx
+│           ├── edit-post-modal.tsx
+│           ├── index.ts        # Barrel export
+│           ├── post-detail-modal.tsx
+│           ├── post-detail.tsx
+│           ├── post-form.tsx
+│           ├── posts-list-skeleton.tsx
+│           ├── posts-list.tsx
+│           └── posts-page-header.tsx
+│
+├── hooks/                      # Custom React hooks
+│   └── use-mobile.ts          # Mobile detection hook
+│
 ├── lib/                        # Shared utility functions and libraries
-│   └── utils.ts               # Utility functions (e.g., cn() for className merging)
+│   ├── api/                    # API utilities
+│   │   ├── axios.ts           # Axios instance and HTTP methods
+│   │   ├── endpoints.ts       # API endpoint constants
+│   │   └── errors.ts          # Error handling utilities
+│   │
+│   ├── auth/                   # Authentication utilities
+│   │   └── cookies.ts        # Cookie management (server-side)
+│   │
+│   ├── query/                  # TanStack Query utilities
+│   │   ├── keys.ts            # Centralized query keys factory
+│   │   ├── providers.tsx      # QueryClientProvider wrapper
+│   │   └── queryClient.ts     # QueryClient configuration
+│   │
+│   ├── env.ts                 # Type-safe environment configuration
+│   ├── routes.ts               # Centralized route constants
+│   └── utils.ts               # Common utilities (e.g., cn())
+│
+├── types/                      # Shared TypeScript types
+│   └── index.ts               # General/shared types (e.g., ApiError)
 │
 ├── public/                     # Static assets served at root
 │   ├── file.svg
@@ -38,12 +144,15 @@ content-hub-next/
 │
 ├── components.json             # shadcn/ui configuration
 ├── eslint.config.mjs          # ESLint configuration
+├── IMPLEMENTATION.MD          # Implementation requirements
+├── IMPLEMENTATION-PHASES.md   # Phased implementation plan
 ├── next.config.ts             # Next.js configuration
 ├── next-env.d.ts              # Next.js TypeScript declarations (generated)
 ├── package.json               # Project dependencies and scripts
 ├── pnpm-lock.yaml             # pnpm lockfile
 ├── pnpm-workspace.yaml        # pnpm workspace configuration
 ├── postcss.config.mjs         # PostCSS configuration (for Tailwind)
+├── proxy.ts                   # Next.js 16 proxy (replaces middleware.ts)
 ├── README.md                  # Project documentation
 └── tsconfig.json              # TypeScript configuration
 ```
@@ -54,10 +163,20 @@ content-hub-next/
 
 The main application directory using Next.js 16 App Router pattern.
 
+**Route Groups:**
+- **`(protected)`**: Routes that require authentication
+- **`(public)`**: Public routes accessible without authentication
+
+**Key Files:**
 - **`app/layout.tsx`**: Root layout that wraps all pages
 - **`app/page.tsx`**: Home page route (`/`)
 - **`app/globals.css`**: Global styles and Tailwind CSS directives
 - **`app/favicon.ico`**: Site favicon
+
+**Route Structure:**
+- **`app/(protected)/dashboard/`**: Main dashboard routes
+- **`app/(protected)/dashboard/posts/`**: Posts management routes
+- **`app/(public)/login/`**: Login page
 
 **Conventions:**
 - Use file-based routing (folders = routes)
@@ -66,26 +185,94 @@ The main application directory using Next.js 16 App Router pattern.
 - `loading.tsx` files define loading states
 - `error.tsx` files define error boundaries
 - `not-found.tsx` files define 404 pages
+- Route groups `(name)` don't affect URL structure
+- Parallel routes `@slot` enable simultaneous rendering
+- Intercepting routes `(.)` catch navigation for modals
+
+### `/actions` - Server Actions
+
+Next.js 16 Server Actions for server-side mutations and data operations.
+
+**Structure:**
+- Feature-based organization (auth, posts, comments, users)
+- Each file exports Server Action functions
+- Uses reusable HTTP functions from `lib/api/axios.ts`
+
+**Conventions:**
+- One file per feature/resource
+- Functions return `{ data }` or `{ error }` objects
+- Use `"use server"` directive (implicit in this directory)
+- Handle errors consistently using `lib/api/errors.ts`
+
+### `/components` - UI Components
+
+Reusable UI components organized by purpose.
+
+**Subdirectories:**
+- **`components/ui/`**: shadcn/ui components and custom UI primitives
+- **`components/partials/`**: Layout partials (sidebar, header, navigation)
+
+**Conventions:**
+- UI components are framework-agnostic when possible
+- Partials are layout-specific and may use Next.js features
+- Follow shadcn/ui patterns for consistency
+- Use TypeScript for type safety
+
+### `/features` - Feature Modules
+
+Feature-based organization following domain-driven design principles.
+
+**Structure:**
+- Each feature has its own directory
+- Features contain: `types.ts`, `queries.ts`, `mutations.ts`, `schema.ts`, `ui/`
+- UI components are in `feature/ui/` subdirectory
+- Barrel exports (`index.ts`) for clean imports
+
+**Current Features:**
+- **`auth`**: Authentication (store, types, login form)
+- **`posts`**: Posts management (queries, mutations, forms, lists)
+
+**Conventions:**
+- Feature folders are self-contained
+- Types are feature-specific (not in `/types`)
+- UI components are co-located with feature logic
+- Use barrel exports for public API
 
 ### `/lib` - Shared Utilities
 
-Contains reusable utility functions and shared code.
+Contains reusable utility functions and shared code organized by domain.
 
-- **`lib/utils.ts`**: Common utilities (currently contains `cn()` for className merging)
+**Subdirectories:**
+- **`lib/api/`**: API client, endpoints, error handling
+- **`lib/auth/`**: Authentication utilities (cookies, tokens)
+- **`lib/query/`**: TanStack Query configuration and utilities
+- **`lib/env.ts`**: Type-safe environment variable access
+- **`lib/routes.ts`**: Centralized route constants
+- **`lib/utils.ts`**: Common utilities (e.g., `cn()`)
 
 **Conventions:**
-- Export pure functions
+- Export pure functions when possible
 - Keep utilities framework-agnostic when possible
 - Use TypeScript for type safety
+- Organize by domain/concern
 
-### `/public` - Static Assets
+### `/types` - Shared Types
 
-Static files served at the root URL path.
+TypeScript type definitions shared across features.
 
 **Conventions:**
-- Place images, fonts, and other static assets here
-- Files are accessible at `/filename.ext`
-- Use for assets that don't need processing
+- Only general/shared types (e.g., `ApiError`)
+- Feature-specific types live in `features/{feature}/types.ts`
+- Use `export type` for type-only exports
+
+### `/hooks` - Custom React Hooks
+
+Reusable React hooks for common functionality.
+
+**Conventions:**
+- Use `use` prefix for hook names
+- Export hooks individually
+- Keep hooks focused and reusable
 
 ### `/.cursor/rules` - Cursor Rules
 
@@ -93,6 +280,7 @@ Project-specific rules and guidelines for AI assistance.
 
 **Existing Rules:**
 - `cursor-rules.mdc`: How to add/edit cursor rules
+- `error-checking.mdc`: Error checking workflow
 - `self-improvement.mdc`: Self-improvement guidelines
 - `project-structure.mdc`: This file
 
@@ -111,12 +299,17 @@ Project dependencies and scripts:
 - **Package Manager**: pnpm
 - **UI Library**: shadcn/ui (via components.json)
 - **Styling**: Tailwind CSS 4
+- **State Management**: Zustand, TanStack Query
+- **Form Validation**: react-hook-form, yup
+- **HTTP Client**: Axios
 
 **Scripts:**
 - `dev`: Start development server
 - `build`: Build for production
 - `start`: Start production server
 - `lint`: Run ESLint
+- `format`: Format code with Prettier
+- `format:check`: Check formatting without changes
 
 ### `tsconfig.json`
 
@@ -127,10 +320,13 @@ TypeScript configuration:
 - Next.js plugin enabled
 
 **Path Aliases:**
+- `@/*` → Project root
 - `@/components` → `/components`
 - `@/lib` → `/lib`
 - `@/hooks` → `/hooks`
-- `@/utils` → `/lib/utils`
+- `@/features` → `/features`
+- `@/actions` → `/actions`
+- `@/types` → `/types`
 
 ### `components.json`
 
@@ -144,9 +340,16 @@ shadcn/ui component configuration:
 
 Next.js configuration file. Currently minimal, add custom config here.
 
+### `proxy.ts`
+
+Next.js 16 proxy file (replaces `middleware.ts`). Handles:
+- Route protection
+- Authentication redirects
+- Cookie management
+
 ### `eslint.config.mjs`
 
-ESLint configuration using Next.js recommended rules.
+ESLint configuration using Next.js recommended rules (flat config format).
 
 ### `postcss.config.mjs`
 
@@ -163,30 +366,54 @@ PostCSS configuration for Tailwind CSS processing.
 
 ### Adding New Features
 
-1. **Pages/Routes**: Add to `/app` directory
-   - Create folder: `app/feature-name/`
-   - Add `page.tsx` for the route
+1. **Feature Module**: Create in `/features`
+   ```
+   features/new-feature/
+   ├── types.ts          # Feature-specific types
+   ├── queries.ts        # TanStack Query hooks
+   ├── mutations.ts      # TanStack Query mutations
+   ├── schema.ts         # Validation schemas (if needed)
+   └── ui/               # UI components
+       ├── index.ts      # Barrel export
+       └── *.tsx         # Component files
+   ```
 
-2. **Components**: Add to `/components` directory (when created)
-   - Reusable UI components
+2. **Server Actions**: Add to `/actions`
+   - Create `actions/new-feature.ts`
+   - Use reusable HTTP functions from `lib/api/axios.ts`
+   - Return `{ data }` or `{ error }` objects
+
+3. **Pages/Routes**: Add to `/app` directory
+   - Create folder: `app/(protected)/feature-name/`
+   - Add `page.tsx` for the route
+   - Add `loading.tsx` and `error.tsx` as needed
+
+4. **Components**: Add to `/components`
+   - **UI primitives**: `components/ui/`
+   - **Layout partials**: `components/partials/`
    - Follow shadcn/ui patterns
 
-3. **Utilities**: Add to `/lib` directory
-   - Shared functions
-   - Helper utilities
+5. **Utilities**: Add to `/lib` directory
+   - Organize by domain (api, auth, query, etc.)
+   - Export pure functions when possible
 
-4. **API Routes**: Add to `/app/api` directory (when created)
-   - Route handlers: `app/api/route-name/route.ts`
+6. **Types**: Add to appropriate location
+   - **Feature-specific**: `features/{feature}/types.ts`
+   - **Shared/general**: `types/index.ts`
 
-5. **Hooks**: Add to `/hooks` directory (when created)
-   - Custom React hooks
+7. **Hooks**: Add to `/hooks` directory
+   - Use `use` prefix
+   - Keep focused and reusable
 
 ### File Naming Conventions
 
-- **Components**: PascalCase (e.g., `UserProfile.tsx`)
-- **Utilities**: camelCase (e.g., `formatDate.ts`)
+- **Components**: PascalCase (e.g., `UserProfile.tsx`, `PostsList.tsx`)
+- **Server Actions**: camelCase (e.g., `getPosts.ts`, `createPost.ts`)
+- **Utilities**: camelCase (e.g., `formatDate.ts`, `wrapError.ts`)
 - **Routes**: lowercase with hyphens (e.g., `user-profile/page.tsx`)
 - **Config files**: kebab-case (e.g., `next.config.ts`, `eslint.config.mjs`)
+- **Types files**: `types.ts` or `index.ts`
+- **Barrel exports**: `index.ts`
 
 ## Technology Stack
 
@@ -196,24 +423,73 @@ PostCSS configuration for Tailwind CSS processing.
 - **Styling**: Tailwind CSS 4
 - **Components**: shadcn/ui
 - **Icons**: lucide-react
+- **State Management**: Zustand (client), TanStack Query (server)
+- **Form Handling**: react-hook-form + yup
+- **HTTP Client**: Axios
+- **Notifications**: sonner
 - **Package Manager**: pnpm
 - **Linting**: ESLint with Next.js config
+- **Formatting**: Prettier
 
 ## Path Aliases
 
-Use these aliases for imports (configured in `tsconfig.json` and `components.json`):
+Use these aliases for imports (configured in `tsconfig.json`):
 
 ```typescript
-import { cn } from "@/lib/utils"           // ✅ Good
-import { cn } from "../../lib/utils"      // ❌ Avoid
+import { cn } from "@/lib/utils"                    // ✅ Good
+import { cn } from "../../lib/utils"                // ❌ Avoid
 
-import { Button } from "@/components/ui/button"  // ✅ Good
+import { Button } from "@/components/ui/button"     // ✅ Good
+import { PostsList } from "@/features/posts/ui"     // ✅ Good
+import { getPosts } from "@/actions/posts"          // ✅ Good
 ```
 
 Available aliases:
 - `@/*` → Project root
-- `@/components` → `/components` (when created)
+- `@/components` → `/components`
 - `@/lib` → `/lib`
-- `@/hooks` → `/hooks` (when created)
-- `@/utils` → `/lib/utils`
-- `@/ui` → `/components/ui` (when created)
+- `@/hooks` → `/hooks`
+- `@/features` → `/features`
+- `@/actions` → `/actions`
+- `@/types` → `/types`
+
+## Architecture Patterns
+
+### Feature-Based Organization
+
+Features are self-contained modules with:
+- Types (`types.ts`)
+- Data fetching (`queries.ts`)
+- Mutations (`mutations.ts`)
+- Validation (`schema.ts`)
+- UI components (`ui/`)
+
+### Server Actions Pattern
+
+Server Actions handle server-side operations:
+- Located in `/actions` directory
+- Use reusable HTTP functions from `lib/api/axios.ts`
+- Return consistent `{ data }` or `{ error }` objects
+- Handle errors using `lib/api/errors.ts`
+
+### Query Key Management
+
+All TanStack Query keys are centralized in `lib/query/keys.ts`:
+- Feature-specific key factories
+- Type-safe key generation
+- Single source of truth
+
+### Route Management
+
+All routes are centralized in `lib/routes.ts`:
+- Structured route constants
+- Type-safe route generation
+- Single source of truth
+
+### Error Handling
+
+Consistent error handling:
+- Server Actions return `{ error }` objects
+- Errors wrapped using `lib/api/errors.ts`
+- Error boundaries for React error handling
+- Toast notifications for user feedback

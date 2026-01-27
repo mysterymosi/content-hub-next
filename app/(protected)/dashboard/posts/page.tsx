@@ -3,7 +3,11 @@ import { createQueryClient } from "@/lib/query/queryClient";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getPosts } from "@/actions/posts";
 import { postKeys } from "@/lib/query/keys";
-import { PostsList, PostsPageHeader } from "@/features/posts/ui";
+import {
+  PostsList,
+  PostsListSkeleton,
+  PostsPageHeader,
+} from "@/features/posts/ui";
 
 interface PostsPageProps {
   searchParams: Promise<{
@@ -43,20 +47,6 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
           <PostsList page={page} limit={limit} />
         </Suspense>
       </HydrationBoundary>
-    </div>
-  );
-}
-
-function PostsListSkeleton() {
-  return (
-    <div className="space-y-4">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-lg border bg-card p-6 animate-pulse">
-          <div className="h-6 bg-muted rounded w-3/4 mb-2" />
-          <div className="h-4 bg-muted rounded w-full mb-1" />
-          <div className="h-4 bg-muted rounded w-5/6" />
-        </div>
-      ))}
     </div>
   );
 }
