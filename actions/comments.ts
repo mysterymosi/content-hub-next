@@ -3,7 +3,8 @@
 import { get } from "@/lib/api/axios";
 import { endpoints } from "@/lib/api/endpoints";
 import { wrapError } from "@/lib/api/errors";
-import type { Comment, ApiError } from "@/types";
+import type { Comment } from "@/features/posts/types";
+import type { ApiError } from "@/types";
 
 /**
  * Get all comments for a specific post

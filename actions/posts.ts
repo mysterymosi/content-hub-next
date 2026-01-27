@@ -3,12 +3,13 @@
 import { get, post, put, del } from "@/lib/api/axios";
 import { endpoints } from "@/lib/api/endpoints";
 import { wrapError } from "@/lib/api/errors";
-import type { Post, CreatePostData, UpdatePostData, ApiError } from "@/types";
+import type {
+  Post,
+  CreatePostData,
+  UpdatePostData,
+} from "@/features/posts/types";
+import type { ApiError } from "@/types";
 
-/**
- * Get all posts
- * @param params Optional query parameters (e.g., _limit, _page)
- */
 export async function getPosts(
   params?: Record<string, string | number>
 ): Promise<{ data: Post[] } | { error: ApiError }> {
@@ -20,9 +21,6 @@ export async function getPosts(
   }
 }
 
-/**
- * Get a single post by ID
- */
 export async function getPost(
   id: number
 ): Promise<{ data: Post } | { error: ApiError }> {
@@ -34,10 +32,6 @@ export async function getPost(
   }
 }
 
-/**
- * Create a new post
- * Note: This is mocked - returns the created post with a generated ID
- */
 export async function createPost(
   data: CreatePostData
 ): Promise<{ data: Post } | { error: ApiError }> {
@@ -49,10 +43,6 @@ export async function createPost(
   }
 }
 
-/**
- * Update an existing post
- * Note: This is mocked - returns the updated post
- */
 export async function updatePost(
   id: number,
   data: UpdatePostData
@@ -65,10 +55,6 @@ export async function updatePost(
   }
 }
 
-/**
- * Delete a post
- * Note: This is mocked - always succeeds
- */
 export async function deletePost(
   id: number
 ): Promise<{ success: true } | { error: ApiError }> {

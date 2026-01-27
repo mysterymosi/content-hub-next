@@ -3,7 +3,8 @@
 import { get } from "@/lib/api/axios";
 import { endpoints } from "@/lib/api/endpoints";
 import { wrapError } from "@/lib/api/errors";
-import type { User, ApiError } from "@/types";
+import type { User } from "@/features/auth/types";
+import type { ApiError } from "@/types";
 
 /**
  * Get a single user by ID

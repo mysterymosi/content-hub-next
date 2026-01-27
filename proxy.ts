@@ -2,49 +2,35 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { AUTH_TOKEN_COOKIE_NAME } from "@/lib/auth/cookies";
+import { routes } from "@/lib/routes";
 
-/**
- * Check if user is authenticated by checking for auth cookie
- */
 function isAuthenticated(request: NextRequest): boolean {
   const token = request.cookies.get(AUTH_TOKEN_COOKIE_NAME);
   return token !== undefined && token.value !== "";
 }
 
-/**
- * Proxy to protect routes and handle authentication redirects
- * Note: In Next.js 16+, middleware.ts has been renamed to proxy.ts
- */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const authenticated = isAuthenticated(request);
 
-  // Protected routes - require authentication
-  const isProtectedRoute = pathname.startsWith("/dashboard");
+  const isProtectedRoute = pathname.startsWith(routes.protected.dashboard.base);
+  const isPublicAuthRoute = pathname === routes.public.login;
 
-  // Public routes that authenticated users shouldn't access
-  const isPublicAuthRoute = pathname === "/login";
-
-  // Redirect unauthenticated users trying to access protected routes
   if (isProtectedRoute && !authenticated) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = new URL(routes.public.login, request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect authenticated users away from login page
   if (isPublicAuthRoute && authenticated) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(
+      new URL(routes.protected.dashboard.base, request.url)
+    );
   }
 
-  // Allow the request to proceed
   return NextResponse.next();
 }
 
-/**
- * Configure which routes the proxy should run on
- * Excludes static files, API routes, and Next.js internals
- */
 export const config = {
   matcher: [
     /*
