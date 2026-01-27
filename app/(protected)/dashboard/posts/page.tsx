@@ -3,8 +3,7 @@ import { createQueryClient } from "@/lib/query/queryClient";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getPosts } from "@/actions/posts";
 import { postKeys } from "@/lib/query/keys";
-import { PostsList } from "@/features/posts/ui";
-import { TypographyH2, TypographyMuted } from "@/components/ui/typography";
+import { PostsList, PostsPageHeader } from "@/features/posts/ui";
 
 interface PostsPageProps {
   searchParams: Promise<{
@@ -37,12 +36,7 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <TypographyH2>Posts</TypographyH2>
-        <TypographyMuted>
-          Browse and manage all posts in the platform.
-        </TypographyMuted>
-      </div>
+      <PostsPageHeader />
 
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Suspense fallback={<PostsListSkeleton />}>

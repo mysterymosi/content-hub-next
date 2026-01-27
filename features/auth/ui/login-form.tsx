@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { useAuthStore } from "../store";
 import { loginAction } from "@/actions/auth";
 import { routes } from "@/lib/routes";
-import type { LoginCredentials } from "../types";
+import type { LoginCredentials } from "@/features/auth/types";
 
 export function LoginForm({
   className,
