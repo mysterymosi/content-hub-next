@@ -6,8 +6,10 @@ import { SiteHeader } from "@/components/partials/site-header";
 
 export default function DashboardLayout({
   children,
+  modal,
 }: {
   children: React.ReactNode;
+  modal: React.ReactNode;
 }) {
   return (
     <SidebarProvider>
@@ -16,6 +18,7 @@ export default function DashboardLayout({
         <SiteHeader />
         <main className="flex flex-1 flex-col gap-4 p-4">{children}</main>
       </SidebarInset>
+      {modal}
     </SidebarProvider>
   );
 }
