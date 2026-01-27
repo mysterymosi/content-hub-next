@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,14 +15,15 @@ import {
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useAuthStore } from "../store";
-import { loginAction } from "@/actions/auth";
+import { useAuthStore } from "@/features/auth/store";
+import { useLogin } from "@/features/auth/mutations";
 import { routes } from "@/lib/routes";
-import type { LoginCredentials } from "@/features/auth/types";
+import { loginSchema, type LoginFormData } from "@/features/auth/schema";
 
 export function LoginForm({
   className,
@@ -29,61 +31,29 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setUser, setLoading, setError, clearError, isLoading, error } =
-    useAuthStore();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [localError, setLocalError] = useState<string | null>(null);
+  const { setUser } = useAuthStore();
+  const login = useLogin();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLocalError(null);
-    clearError();
+  const form = useForm<LoginFormData>({
+    resolver: yupResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-    if (!email || !password) {
-      setLocalError("Please fill in all fields");
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setLocalError("Please enter a valid email address");
-      return;
-    }
-
+  const onSubmit = async (data: LoginFormData) => {
     try {
-      setLoading(true);
-      clearError();
-
-      const credentials: LoginCredentials = { email, password };
-      const response = await loginAction(credentials);
-
-      if ("error" in response) {
-        setLoading(false);
-        const errorMessage =
-          response.error.message || "Login failed. Please try again.";
-        setError(errorMessage);
-        setLocalError(errorMessage);
-        return;
-      }
-
+      const response = await login.mutateAsync(data);
       setUser(response.user);
-      setLoading(false);
 
       const redirect =
         searchParams.get("redirect") || routes.protected.dashboard.base;
       router.push(redirect);
-      router.refresh();
-    } catch (err) {
-      setLoading(false);
-      const errorMessage =
-        err instanceof Error ? err.message : "Login failed. Please try again.";
-      setError(errorMessage);
-      setLocalError(errorMessage);
+    } catch (error) {
+      console.error(error);
     }
   };
-
-  const displayError = localError || error;
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -95,51 +65,73 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup>
-              {displayError && (
+              {login.isError && (
                 <Field>
                   <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-                    {displayError}
+                    {login.error?.message || "Login failed. Please try again."}
                   </div>
                 </Field>
               )}
+              <Controller
+                name="email"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="login-email">Email</FieldLabel>
+                    <Input
+                      {...field}
+                      id="login-email"
+                      type="email"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="m@example.com"
+                      disabled={login.isPending}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="password"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <div className="flex items-center">
+                      <FieldLabel htmlFor="login-password">Password</FieldLabel>
+                      <a
+                        href="#"
+                        className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          // TODO: Implement forgot password
+                        }}
+                      >
+                        Forgot your password?
+                      </a>
+                    </div>
+                    <Input
+                      {...field}
+                      id="login-password"
+                      type="password"
+                      aria-invalid={fieldState.invalid}
+                      disabled={login.isPending}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
-                />
-              </Field>
-              <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      // TODO: Implement forgot password
-                    }}
-                  >
-                    Forgot your password?
-                  </a>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading}
-                />
-              </Field>
-              <Field>
-                <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? "Logging in..." : "Login"}
+                <Button
+                  type="submit"
+                  disabled={login.isPending}
+                  className="w-full"
+                >
+                  {login.isPending ? "Logging in..." : "Login"}
                 </Button>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account?{" "}

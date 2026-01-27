@@ -7,15 +7,10 @@ import type { User } from "@/features/auth/types";
 interface AuthStore {
   user: User | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
 }
 
 interface AuthActions {
   setUser: (user: User | null) => void;
-  setLoading: (isLoading: boolean) => void;
-  setError: (error: string | null) => void;
-  clearError: () => void;
   logout: () => void;
 }
 
@@ -24,8 +19,6 @@ type AuthStoreType = AuthStore & AuthActions;
 const initialState: AuthStore = {
   user: null,
   isAuthenticated: false,
-  isLoading: false,
-  error: null,
 };
 
 export const useAuthStore = create<AuthStoreType>()(
@@ -37,24 +30,10 @@ export const useAuthStore = create<AuthStoreType>()(
         set({ user, isAuthenticated: !!user });
       },
 
-      setLoading: (isLoading: boolean) => {
-        set({ isLoading });
-      },
-
-      setError: (error: string | null) => {
-        set({ error });
-      },
-
-      clearError: () => {
-        set({ error: null });
-      },
-
       logout: () => {
         set({
           user: null,
           isAuthenticated: false,
-          isLoading: false,
-          error: null,
         });
       },
     }),
