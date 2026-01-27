@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import { usePosts } from "@/features/posts/queries";
 import { routes } from "@/lib/routes";
@@ -13,6 +13,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { TypographyMuted } from "@/components/ui/typography";
+import { PaginationComp } from "@/components/ui/pagination-comp";
+import { DeletePostDialog } from "./delete-post-dialog";
+import { Trash2 } from "lucide-react";
 
 interface PostsListProps {
   page: number;
@@ -20,22 +23,13 @@ interface PostsListProps {
 }
 
 export function PostsList({ page, limit }: PostsListProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const [deletePostId, setDeletePostId] = useState<number | null>(null);
   const apiParams = {
     _page: page,
     _limit: limit,
   };
 
   const { data: posts, isLoading, error } = usePosts(apiParams);
-
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", newPage.toString());
-    router.push(
-      `${routes.protected.dashboard.posts.base}?${params.toString()}`
-    );
-  };
 
   if (isLoading) {
     return <PostsListSkeleton />;
@@ -69,50 +63,68 @@ export function PostsList({ page, limit }: PostsListProps) {
   const hasPrevPage = page > 1;
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        {posts.map((post) => (
-          <Link
-            key={post.id}
-            href={routes.protected.dashboard.posts.detail(post.id)}
-          >
-            <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-              <CardHeader>
-                <CardTitle className="line-clamp-2">{post.title}</CardTitle>
-                <CardDescription>Post ID: {post.id}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TypographyMuted className="line-clamp-3">
-                  {post.body}
-                </TypographyMuted>
-              </CardContent>
+    <>
+      <div className="space-y-6">
+        <div className="space-y-4">
+          {posts.map((post) => (
+            <Card
+              key={post.id}
+              className="hover:bg-accent/50 transition-colors relative group"
+            >
+              <Link href={routes.protected.dashboard.posts.detail(post.id)}>
+                <CardHeader>
+                  <CardTitle className="line-clamp-2 pr-8">
+                    {post.title}
+                  </CardTitle>
+                  <CardDescription>Post ID: {post.id}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <TypographyMuted className="line-clamp-3">
+                    {post.body}
+                  </TypographyMuted>
+                </CardContent>
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeletePostId(post.id);
+                }}
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
             </Card>
-          </Link>
-        ))}
+          ))}
+        </div>
+
+        <PaginationComp
+          basePath={routes.protected.dashboard.posts.base}
+          page={page}
+          limit={limit}
+          hasNextPage={hasNextPage}
+          hasPrevPage={hasPrevPage}
+        />
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-          Page {page} • {posts.length} posts
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => handlePageChange(page - 1)}
-            disabled={!hasPrevPage}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => handlePageChange(page + 1)}
-            disabled={!hasNextPage}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-    </div>
+      {deletePostId &&
+        (() => {
+          const postToDelete = posts.find((p) => p.id === deletePostId);
+          if (!postToDelete) return null;
+          return (
+            <DeletePostDialog
+              open={true}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setDeletePostId(null);
+                }
+              }}
+              post={postToDelete}
+            />
+          );
+        })()}
+    </>
   );
 }
 

@@ -1,3 +1,8 @@
 export { PostsList } from "./posts-list";
 export { PostDetail } from "./post-detail";
 export { PostDetailModal } from "./post-detail-modal";
+export { PostForm } from "./post-form";
+export { CreatePostModal } from "./create-post-modal";
+export { EditPostModal } from "./edit-post-modal";
+export { DeletePostDialog } from "./delete-post-dialog";
+export { PostsPageHeader } from "./posts-page-header";
